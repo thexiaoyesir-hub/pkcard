@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<title>沙坡头购票判断卡 · 答题页（试用版 V1）</title>
+<meta name="description" content="看判断卡与原图后作答，提交后生成回传码，复制发回即可。">
+<style>
+:root{
+  --ink:#1b2422; --ink-2:#4a5652; --ink-3:#7b847f;
+  --paper:#f7f3ea; --card:#fff; --card-2:#f4efe3;
+  --brand:#123c3a; --brand-2:#1d5b52; --teal:#1f6f62; --amber:#9a6a24; --rust:#a45a2a;
+  --line:#e3dccd; --line-2:#efe9dc;
+  --ok:#1f6f62; --warn:#b4472c;
+  --radius:14px;
+  --shadow:0 1px 2px rgba(27,36,34,.05), 0 8px 24px rgba(27,36,34,.05);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--paper); color:var(--ink);
+  font:16px/1.75 -apple-system,BlinkMacSystemFont,"PingFang SC","HarmonyOS Sans SC","Noto Sans SC","Microsoft YaHei",system-ui,sans-serif;
+  padding-bottom:calc(96px + env(safe-area-inset-bottom));
+  -webkit-font-smoothing:antialiased;
+}
+img{max-width:100%;display:block}
+button{font:inherit;color:inherit}
+a{color:var(--brand-2)}
+
+.hero{
+  background:linear-gradient(160deg,#123c3a 0%,#164a45 60%,#1b564e 100%);
+  color:#f3efe4; padding:28px 20px 24px;
+  border-radius:0 0 22px 22px;
+}
+.hero .wrap{max-width:720px;margin:0 auto}
+.kicker{font-size:13px;letter-spacing:.06em;color:#b9d3cb;margin:0 0 10px}
+.hero h1{margin:0 0 10px;font-size:26px;line-height:1.35;font-weight:700;letter-spacing:.01em}
+.hero p.sub{margin:0;font-size:14.5px;color:#cfe0da;line-height:1.7}
+.hero .meta{margin-top:14px;font-size:12.5px;color:#a9c3bb}
+
+main{max-width:720px;margin:0 auto;padding:18px 16px 0}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 16px 14px;box-shadow:var(--shadow);margin:0 0 14px}
+.card.sit{background:var(--card-2);border-color:#e8dfca}
+.sit h2{font-size:14px;margin:0 0 8px;color:var(--amber);letter-spacing:.04em;font-weight:600;display:flex;gap:8px;align-items:center}
+.sit p{margin:0;font-size:15px;line-height:1.8}
+.sit p b{font-weight:600}
+
+h2.sec{font-size:17px;margin:26px 4px 12px;display:flex;align-items:baseline;gap:8px}
+h2.sec span.n{font-size:12px;color:#fff;background:var(--brand);border-radius:999px;padding:2px 9px;letter-spacing:.06em;font-weight:500}
+h2.sec small{font-size:12.5px;color:var(--ink-3);font-weight:400;margin-left:auto}
+
+.judge{border:1px solid var(--line-2);border-radius:12px;padding:13px 14px;margin:0 0 10px;background:#fff}
+.judge .top{display:flex;gap:9px;align-items:center;margin-bottom:6px;flex-wrap:wrap}
+.tag{font-size:12px;padding:2px 8px;border-radius:6px;letter-spacing:.03em;font-weight:600;white-space:nowrap}
+.tag.ok{color:#12574c;background:#e3f1ec;border:1px solid #cbe6dd}
+.tag.cond{color:#8a5c15;background:#fbf1dd;border:1px solid #f0dfba}
+.tag.wait{color:#8f4a1f;background:#fbe8dd;border:1px solid #f2d3c1}
+.judge .head{font-size:15.5px;font-weight:600;line-height:1.6}
+.judge .body{margin:4px 0 0;font-size:14.5px;color:var(--ink-2);line-height:1.8}
+.judge .src{margin:8px 0 0;font-size:12px;color:var(--ink-3);font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+
+details{margin:0 0 12px}
+details > summary{
+  list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;
+  padding:12px 14px;background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);
+  font-size:15px;font-weight:600;
+}
+details > summary::-webkit-details-marker{display:none}
+details > summary::before{content:"▾";color:var(--ink-3);font-size:12px;transition:transform .15s}
+details:not([open]) > summary::before{transform:rotate(-90deg)}
+details > summary small{font-weight:400;color:var(--ink-3);font-size:12.5px;margin-left:auto}
+details .panel{padding:12px 2px 0}
+
+.ev{margin:0 0 18px}
+.ev .lbl{font-size:13.5px;color:var(--brand-2);font-weight:600;margin:0 0 6px;line-height:1.6}
+.ev .lbl em{font-style:normal;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--amber);margin-right:6px}
+.ev img{border:1px solid var(--line);border-radius:10px;background:#fff;cursor:zoom-in}
+.ev .cap{font-size:12.5px;color:var(--ink-3);margin:6px 0 0;line-height:1.65}
+.note{font-size:13px;color:var(--ink-2);background:#fbf7ee;border-left:3px solid #d7c9a6;border-radius:0 8px 8px 0;padding:9px 12px;line-height:1.7}
+.note p{margin:0 0 6px}
+.note p:last-child{margin:0}
+
+.rules{background:#f3f6f2;border:1px solid #dfe6dc;border-radius:12px;padding:12px 14px;font-size:13.5px;line-height:1.8;color:#2f3c37;margin:0 0 14px}
+.rules b{color:#12574c}
+
+.field{margin:0 0 14px}
+.field label{display:block;font-size:13.5px;color:var(--ink-2);margin:0 0 6px;font-weight:600}
+.field .hint{font-weight:400;color:var(--ink-3);font-size:12.5px}
+input[type=text]{
+  width:100%;padding:11px 13px;font:inherit;font-size:16px;color:var(--ink);
+  border:1px solid #d8d0bf;border-radius:10px;background:#fff;
+}
+input[type=text]:focus,textarea:focus{outline:2px solid #9fc7bb;outline-offset:1px;border-color:#9fc7bb}
+.radios{display:flex;gap:10px;flex-wrap:wrap}
+.radios label{
+  display:flex;align-items:center;gap:8px;padding:9px 16px;border:1px solid #d8d0bf;border-radius:10px;
+  background:#fff;font-size:15px;font-weight:400;color:var(--ink);cursor:pointer;margin:0;
+}
+.radios input{width:18px;height:18px;margin:0;accent-color:#1f6f62}
+.radios label:has(input:checked){border-color:#1f6f62;background:#eef6f3;box-shadow:inset 0 0 0 1px #1f6f62}
+
+.q{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:15px 15px 12px;margin:0 0 12px;box-shadow:var(--shadow)}
+.q .qhead{display:flex;gap:10px;margin:0 0 10px}
+.q .num{
+  flex:0 0 26px;height:26px;border-radius:8px;background:var(--brand);color:#f3efe4;
+  display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:600;margin-top:2px;
+}
+.q .qtext{font-size:15.5px;line-height:1.75;font-weight:500;margin:0}
+.q textarea{
+  width:100%;min-height:104px;resize:vertical;padding:12px 13px;font:inherit;font-size:16px;line-height:1.7;
+  border:1px solid #d8d0bf;border-radius:10px;background:#fff;
+}
+.q textarea::placeholder{color:#b3b0a5}
+.anchors{max-width:720px;margin:0 auto;padding:12px 16px 0;display:flex;gap:8px;flex-wrap:wrap}
+.anchors a{font-size:13px;padding:6px 13px;border:1px solid var(--line);border-radius:999px;background:#fff;color:var(--ink-2);text-decoration:none}
+.anchors a:active{background:#eef6f3;border-color:#9fc7bb}
+.anchors a.primary{background:var(--brand);color:#f6f2e7;border-color:var(--brand)}
+h2.sec{scroll-margin-top:12px}
+.q .foot{display:flex;align-items:center;gap:10px;margin-top:7px;flex-wrap:wrap}
+.q .count{font-size:12px;color:var(--ink-3);margin-left:auto;font-variant-numeric:tabular-nums}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+.chips button{
+  border:1px solid #d8d0bf;background:#fbf8f0;border-radius:999px;padding:5px 12px;font-size:12.5px;
+  color:var(--ink-2);cursor:pointer;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+.chips button:active{background:#eef6f3;border-color:#9fc7bb}
+
+.bar{
+  position:fixed;left:0;right:0;bottom:0;z-index:30;
+  background:rgba(247,243,234,.94);backdrop-filter:blur(8px);
+  border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom));
+}
+.bar .inner{max-width:720px;margin:0 auto;display:flex;align-items:center;gap:12px}
+.bar .prog{font-size:13px;color:var(--ink-2);line-height:1.4}
+.bar .prog b{font-size:15px;color:var(--ink)}
+.bar .prog .saved{display:block;font-size:11.5px;color:var(--ink-3)}
+.btn{
+  border:0;border-radius:12px;padding:13px 18px;font-size:16px;font-weight:600;cursor:pointer;
+  background:var(--brand);color:#f6f2e7;box-shadow:0 6px 16px rgba(18,60,58,.22);
+}
+.btn:active{transform:translateY(1px)}
+.btn.block{width:100%}
+.btn.ghost{background:#fff;color:var(--brand);border:1px solid #cfc7b6;box-shadow:none;font-weight:500}
+.btn.small{padding:9px 14px;font-size:14px;border-radius:10px}
+.bar .btn{margin-left:auto;flex:0 0 auto}
+
+.banner{
+  display:none;margin:0 0 14px;padding:10px 14px;border-radius:10px;font-size:13px;
+  background:#eef6f3;border:1px solid #cbe6dd;color:#12574c;
+}
+.banner.show{display:block}
+.banner button{background:none;border:0;color:#12574c;text-decoration:underline;padding:0;cursor:pointer;font-size:13px}
+
+/* 结果 */
+#result{display:none}
+#result.show{display:block}
+.done{text-align:center;padding:8px 0 14px}
+.done .ico{width:52px;height:52px;border-radius:50%;background:#e3f1ec;color:#1f6f62;display:flex;align-items:center;justify-content:center;margin:6px auto 10px;font-size:26px}
+.done h2{margin:0 0 6px;font-size:20px}
+.done p{margin:0;font-size:13.5px;color:var(--ink-2)}
+.codebox{
+  width:100%;min-height:120px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:12.5px;
+  line-height:1.6;word-break:break-all;padding:12px;border:1px dashed #c9c0ad;border-radius:10px;background:#fdfbf5;color:#3a4642;
+}
+.steps{margin:16px 0 0;padding:0;list-style:none;counter-reset:s}
+.steps li{counter-increment:s;position:relative;padding:0 0 12px 30px;font-size:14px;line-height:1.75;color:var(--ink-2)}
+.steps li::before{
+  content:counter(s);position:absolute;left:0;top:1px;width:21px;height:21px;border-radius:50%;
+  background:#e9e3d4;color:var(--brand);font-size:12px;display:flex;align-items:center;justify-content:center;font-weight:600;
+}
+.row{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.row .btn{flex:1 1 140px}
+.mini{font-size:12px;color:var(--ink-3);margin:10px 0 0;line-height:1.7}
+
+footer.foot{max-width:720px;margin:26px auto 0;padding:0 16px 20px;font-size:12px;color:var(--ink-3);line-height:1.8}
+
+dialog.lightbox{border:0;padding:0;background:#0f1614;max-width:none;max-height:none;width:100%;height:100%;margin:0}
+dialog.lightbox::backdrop{background:#0f1614}
+dialog.lightbox img{width:100%;height:100%;object-fit:contain}
+dialog.lightbox .close{position:fixed;top:calc(10px + env(safe-area-inset-top));right:14px;background:rgba(255,255,255,.14);color:#fff;border:0;border-radius:999px;width:40px;height:40px;font-size:20px;cursor:pointer}
+.toast{
+  position:fixed;left:50%;bottom:calc(108px + env(safe-area-inset-bottom));transform:translate(-50%,10px);
+  background:#123c3a;color:#f6f2e7;padding:10px 18px;border-radius:999px;font-size:14px;
+  opacity:0;pointer-events:none;transition:.22s;z-index:60;max-width:86vw;text-align:center;
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (max-width:360px){ .hero h1{font-size:23px} }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="kicker">沙坡头购票判断卡 / 历史截图模拟练习</p>
+    <h1>现在能买，出游那天就能用吗？</h1>
+    <p class="sub">先看日期与票种，再看购买、入园、核销各自的条件。</p>
+    <p class="meta">试用版 V1 · 2026 年 10 月留存材料 · 网页答题</p>
+  </div>
+</header>
+
+<main>
+  <nav class="anchors">
+    <a href="#m1">判断卡</a>
+    <a href="#m2">原图 · 时间</a>
+    <a href="#m3">原图 · 日期</a>
+    <a href="#quiz" class="primary">直接答题</a>
+  </nav>
+
+  <section class="card sit">
+    <h2>模拟情境</h2>
+    <p>2026年10月28日；20岁全日制本科生，持身份证、学生证，身高1.70米；想体验滑沙与骑骆驼。未提供完整健康情况。</p>
+  </section>
+
+  <div class="banner" id="draftBanner">
+    已恢复你上次未提交的内容。<button type="button" id="resetDraft">清空重答</button>
+  </div>
+
+  <h2 class="sec" id="m1"><span class="n">材料一</span>判断卡<small>6 条示范结论</small></h2>
+
+  <details open>
+    <summary>判断卡：示范结论与依据<small>点开／收起</small></summary>
+    <div class="panel">
+
+      <div class="judge">
+        <div class="top"><span class="tag ok">有据结论</span><span class="head">暖冬票的游玩日期不支持10月28日</span></div>
+        <p class="body">可约游玩日期从2026年11月6日起，至2027年3月31日部分日期可约；10月20日起可发起预约，不等于10月20日起可游玩。</p>
+        <p class="src">E07 · 第3页</p>
+      </div>
+
+      <div class="judge">
+        <div class="top"><span class="tag ok">有据结论</span><span class="head">279组合套票A含所需项目，门票另计</span></div>
+        <p class="body">条款包含滑沙、骆驼环线，但明确不含景区门票；当日有效，各项目仅限一次。项目当天是否运营仍需确认。</p>
+        <p class="src">E03 · 第2页</p>
+      </div>
+
+      <div class="judge">
+        <div class="top"><span class="tag ok">有据结论</span><span class="head">17:00晚于截图所示停止入场时间</span></div>
+        <p class="body">E50写08:30开放、16:30停止入场、17:30结束。该时间卡未标年份，不能据此保证模拟出游日的实际开放安排。</p>
+        <p class="src">E50 · 第2页</p>
+      </div>
+
+      <div class="judge">
+        <div class="top"><span class="tag cond">附带条件</span><span class="head">本科身份有学生门票资格依据</span></div>
+        <p class="body">E05适用全日制大中小学生，不含成人教育、研究生；需有效证件。页面仅显示可订10月22日，未核实10月28日库存及结算价。</p>
+        <p class="src">E05 · 第3页</p>
+      </div>
+
+      <div class="judge">
+        <div class="top"><span class="tag wait">待确认</span><span class="head">购票与核销，各看各的时间</span></div>
+        <p class="body">E03写12:00购买截止，未明确核销截止；08:30开园也不能推出线上开售时间。“4小时以上”对应全套参与，并非只玩两项。</p>
+        <p class="src">E03、E50 · 第2页</p>
+      </div>
+
+      <div class="judge">
+        <div class="top"><span class="tag wait">待确认</span><span class="head">优惠能否叠加，不能只做减法</span></div>
+        <p class="body">E07同时展示369元、券后359元和“金币兑券减10”。无法确认359元是否已含该优惠，不能直接认定实付349元。</p>
+        <p class="src">E07 · 第3页</p>
+      </div>
+
+      <p class="note">本卡只解释留存材料。真实购票须查看对应日期、账号结算与景区当日公告。</p>
+    </div>
+  </details>
+
+  <h2 class="sec" id="m2"><span class="n">材料二</span>原图证据<small>时间与票种</small></h2>
+
+  <details open>
+    <summary>E03 / E50：时间与票种<small>点开／收起</small></summary>
+    <div class="panel">
+      <p class="note" style="margin-bottom:14px">截图节选保留原文字；只裁去无关区域，不补写条款。点击图片可放大。</p>
+
+      <div class="ev">
+        <p class="lbl"><em>E03</em>“沙坡头景区”小程序：279组合套票A</p>
+        <img src="assets/e03_notice.jpg" alt="E03 预订须知：费用包含、费用不含、适用期限、适用人群" loading="lazy" data-zoom>
+      </div>
+
+      <div class="ev">
+        <p class="lbl"><em>E03</em>同一页面的使用说明</p>
+        <img src="assets/e03_usage.jpg" alt="E03 使用说明：凭二维码核销，全程参与需4小时以上" loading="lazy" data-zoom>
+      </div>
+
+      <div class="ev">
+        <p class="lbl"><em>E50</em>抖音景区详情：开放时间卡片</p>
+        <img src="assets/e50_hours.jpg" alt="E50 开放时间：10月12日至10月31日，08:30-17:30，16:30停止入场" loading="lazy" data-zoom>
+      </div>
+
+      <div class="note">
+        <p>E03 还有儿童参与、健康限制等须知，本页未全部展示。完整条件仍须在真实购买时核对。</p>
+        <p>E50 的开放时间区块没有显示年份；截图自身提示以景区公示为准。</p>
+      </div>
+    </div>
+  </details>
+
+  <h2 class="sec" id="m3"><span class="n">材料三</span>原图证据<small>日期、优惠与资格</small></h2>
+
+  <details open>
+    <summary>E07 / E05：日期、优惠与资格<small>点开／收起</small></summary>
+    <div class="panel">
+      <p class="note" style="margin-bottom:14px">材料来源：E07、E05 均为团队 2026 年 10 月留存的抖音商品页。</p>
+
+      <div class="ev">
+        <p class="lbl"><em>E07</em>暖冬组合票：页面价格与商品名称</p>
+        <img src="assets/e07_price.jpg" alt="E07 价格：369元、券后359元、金币兑券减10" loading="lazy" data-zoom>
+      </div>
+
+      <div class="ev">
+        <p class="lbl"><em>E07</em>预约日期条款</p>
+        <img src="assets/e07_dates.jpg" alt="E07 购买须知：可约日期 2026.11.06 至 2027.03.31 部分日期可约" loading="lazy" data-zoom>
+        <p class="lbl" style="margin-top:12px">同一条款的下一行</p>
+        <img src="assets/e07_next.jpg" alt="E07 需在2026-10-20至2027-03-31发起预约" loading="lazy" data-zoom>
+        <p class="cap">“可约日期”说的是游玩日；“发起预约”说的是办理预约的时间。范围内也只有部分日期可约。</p>
+      </div>
+
+      <div class="ev">
+        <p class="lbl"><em>E05</em>儿童/学生门票：资格</p>
+        <img src="assets/e05_qual.jpg" alt="E05 购买须知：可订10月22日、无需取票、适用人群全日制大中小学生" loading="lazy" data-zoom>
+        <p class="cap">E05 截图上方另写“可订10月22日”，不能据此确认10月28日库存。</p>
+      </div>
+
+      <div class="note">E07 原图底部仍有“展开全部”，留存截图不是全部销售条款；具体日期库存、领券资格及最终费用均未实测。</div>
+    </div>
+  </details>
+
+  <h2 class="sec" id="quiz"><span class="n">答题</span>看卡片和原图后，用自己的话回答<small>6 题</small></h2>
+
+  <div class="rules">
+    <b>请独立作答</b>，可以回看上面的材料；不用 AI 或外部搜索，不与其他人商量。答不出就写“不确定”。<br>
+    匿名整理反馈，用于改进卡片；参与自愿。不用打印，也不用真的买票。
+  </div>
+
+  <div class="card">
+    <div class="field">
+      <label for="pid">编号 <span class="hint">发起人分配，如 T01、T02</span></label>
+      <input type="text" id="pid" autocomplete="off" placeholder="如 T01" inputmode="text">
+    </div>
+
+    <div class="field">
+      <label>是否参与过制作或看过本作品</label>
+      <div class="radios">
+        <label><input type="radio" name="seen" value="是">是</label>
+        <label><input type="radio" name="seen" value="否">否</label>
+      </div>
+    </div>
+
+    <div class="field" style="margin-bottom:0">
+      <label>是否独立完成、未用 AI 或外部搜索</label>
+      <div class="radios">
+        <label><input type="radio" name="solo" value="是">是</label>
+        <label><input type="radio" name="solo" value="否">否</label>
+      </div>
+    </div>
+  </div>
+
+  <div id="questions"></div>
+
+  <div class="q">
+    <div class="qhead">
+      <div class="num" style="background:#7c6a45">+</div>
+      <p class="qtext">额外反馈：哪句话最难懂？在哪一步找不到依据？没有也请如实写“无”。</p>
+    </div>
+    <textarea id="fb" rows="4" placeholder="没有就写“无”"></textarea>
+    <div class="foot"><span class="count" id="fbCount">0 字</span></div>
+    <p class="mini" style="margin:8px 0 0">答题后可以补充你的真实感受，不需要给好评，也不需要迎合制作团队。</p>
+  </div>
+
+  <footer class="foot">
+    本页只用于试用与反馈收集，不涉及真实购票。答案只保存在你自己的手机里，点“提交”后由你把回传码发回给发起人。
+  </footer>
+</main>
+
+<div class="bar">
+  <div class="inner">
+    <div class="prog"><b id="progNum">0/6</b> 题已填<span class="saved" id="savedTip">手机本地自动保存</span></div>
+    <button class="btn" id="submitBtn" type="button">提交</button>
+  </div>
+</div>
+
+<section id="result">
+  <main style="padding-top:18px">
+    <div class="card">
+      <div class="done">
+        <div class="ico">✓</div>
+        <h2>写完了，把回传码发回即可</h2>
+        <p id="doneMeta">编号 T01</p>
+      </div>
+
+      <p style="font-size:14px;color:#4a5652;margin:0 0 10px">下面这段就是你的答案，<b>复制后发到群里或发给发起人</b>。它已经压缩过，长度大约几百字。</p>
+      <textarea class="codebox" id="codeOut" readonly></textarea>
+
+      <div class="row">
+        <button class="btn" id="copyBtn" type="button">复制回传码</button>
+        <button class="btn ghost" id="dlBtn" type="button">下载答案文件</button>
+      </div>
+
+      <ol class="steps">
+        <li>点“复制回传码”。</li>
+        <li>回到微信，粘贴发给发起人（或发到收集群）。</li>
+        <li>收到“已记录”即可关闭本页；不用重复发送。</li>
+      </ol>
+
+      <p class="mini">如果复制不方便，也可以点“下载答案文件”，把那个 <code>.txt</code> 发给发起人。答案不会自动上传到任何服务器。</p>
+
+      <div class="row" style="margin-top:16px">
+        <button class="btn ghost" id="backBtn" type="button">返回修改</button>
+      </div>
+    </div>
+  </main>
+</section>
+
+<dialog class="lightbox" id="lb">
+  <button class="close" id="lbClose" type="button" aria-label="关闭">×</button>
+  <img id="lbImg" alt="">
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ====== 可改配置 ====== */
+const CONFIG = {
+  // 留空：只生成回传码（推荐，无需服务器）。
+  // 填上 Formspree / 云函数地址：提交时额外自动 POST 一份 JSON 过去。
+  endpoint: "",
+  version: "V1"
+};
+
+const QUESTIONS = [
+  "计划10月28日出游，暖冬票能否作为当天可用的选择？请写判断和依据。",
+  "想玩滑沙和骑骆驼，只买279组合套票A是否就已覆盖入园门票？材料能确定哪些费用包含关系？",
+  "针对套票A与E50开放时间卡，08:30、12:00、16:30分别约束什么动作？能否确定线上开售及A最晚核销时间？",
+  "看到“券后359元”和“金币兑券减10”，能否直接算出实付349元？还缺什么信息？",
+  "如果把出游日改为2026年11月20日，仅因它落在暖冬票日期范围内，就能保证约到吗？下一步要查什么？",
+  "从前面任一结论中，找出对应原图编号，并抄一句支持它的原文；再写一项仍需确认的事及所缺信息。"
+];
+
+const DRAFT_KEY = "pkcard.v1.draft";
+const $ = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+
+/* ---------- 渲染题目 ---------- */
+const qWrap = $("#questions");
+QUESTIONS.forEach((text, i) => {
+  const el = document.createElement("div");
+  el.className = "q";
+  el.innerHTML =
+    '<div class="qhead"><div class="num">' + (i + 1) + '</div><p class="qtext">' + text + '</p></div>' +
+    '<textarea rows="4" id="q' + (i + 1) + '" data-q="' + i + '" placeholder="写下你的判断和依据；不确定就写“不确定”"></textarea>' +
+    '<div class="foot"><span class="count" id="c' + (i + 1) + '">0 字</span></div>' +
+    (i === 5
+      ? '<div class="chips"><span style="font-size:12px;color:#7b847f;align-self:center">原图编号可点选插入：</span>' +
+        ["E03", "E05", "E07", "E50"].map(c => '<button type="button" data-ins="' + c + '">' + c + '</button>').join("") +
+        "</div>"
+      : "");
+  qWrap.appendChild(el);
+});
+
+/* ---------- 状态与本地保存 ---------- */
+function readForm() {
+  const r = n => { const x = document.querySelector('input[name="' + n + '"]:checked'); return x ? x.value : ""; };
+  const a = QUESTIONS.map((_, i) => ($("#q" + (i + 1)).value || ""));
+  return { id: $("#pid").value.trim(), seen: r("seen"), solo: r("solo"), a: a, fb: $("#fb").value || "" };
+}
+
+let saveTimer = null;
+function saveDraft() {
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify({ ...readForm(), at: Date.now() })); } catch (e) {}
+  const tip = $("#savedTip");
+  tip.textContent = "已保存 " + new Date().toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit" });
+}
+function queueSave() { clearTimeout(saveTimer); saveTimer = setTimeout(saveDraft, 350); }
+
+function restoreDraft() {
+  let d = null;
+  try { d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null"); } catch (e) {}
+  if (!d) return false;
+  if (d.id) $("#pid").value = d.id;
+  if (d.seen) { const x = document.querySelector('input[name="seen"][value="' + d.seen + '"]'); if (x) x.checked = true; }
+  if (d.solo) { const x = document.querySelector('input[name="solo"][value="' + d.solo + '"]'); if (x) x.checked = true; }
+  (d.a || []).forEach((v, i) => { const t = $("#q" + (i + 1)); if (t && v) t.value = v; });
+  if (d.fb) $("#fb").value = d.fb;
+  const any = (d.a || []).some(v => v) || d.fb || d.id;
+  if (any) $("#draftBanner").classList.add("show");
+  return !!any;
+}
+
+/* ---------- 统计与计数 ---------- */
+function refresh() {
+  let filled = 0;
+  QUESTIONS.forEach((_, i) => {
+    const v = ($("#q" + (i + 1)).value || "").trim();
+    if (v) filled++;
+    $("#c" + (i + 1)).textContent = v.length + " 字";
+  });
+  $("#fbCount").textContent = ($("#fb").value || "").trim().length + " 字";
+  $("#progNum").textContent = filled + "/6";
+  return filled;
+}
+
+/* ---------- 交互绑定 ---------- */
+document.addEventListener("input", e => {
+  if (e.target.matches("#pid, textarea, input[type=radio]")) { refresh(); queueSave(); }
+});
+document.addEventListener("change", e => { if (e.target.matches("input[type=radio]")) queueSave(); });
+
+$("#resetDraft").addEventListener("click", () => {
+  if (!confirm("清空已填内容，重新作答？")) return;
+  try { localStorage.removeItem(DRAFT_KEY); } catch (e) {}
+  $("#pid").value = ""; $("#fb").value = "";
+  $$('input[type=radio]').forEach(x => (x.checked = false));
+  QUESTIONS.forEach((_, i) => { $("#q" + (i + 1)).value = ""; });
+  $("#draftBanner").classList.remove("show");
+  refresh();
+});
+
+/* 插入编号 */
+document.addEventListener("click", e => {
+  const b = e.target.closest("[data-ins]");
+  if (!b) return;
+  const ta = $("#q6");
+  const s = b.dataset.ins;
+  const p = ta.selectionStart == null ? ta.value.length : ta.selectionStart;
+  ta.value = ta.value.slice(0, p) + s + ta.value.slice(ta.selectionEnd == null ? p : ta.selectionEnd);
+  ta.focus();
+  ta.setSelectionRange(p + s.length, p + s.length);
+  refresh(); queueSave();
+});
+
+/* 图片放大 */
+const lb = $("#lb"), lbImg = $("#lbImg");
+document.addEventListener("click", e => {
+  const img = e.target.closest("img[data-zoom]");
+  if (!img) return;
+  lbImg.src = img.src;
+  lbImg.alt = img.alt || "";
+  if (typeof lb.showModal === "function") lb.showModal();
+  else { lbImg.style.width = "100%"; document.body.appendChild(lb); }
+});
+$("#lbClose").addEventListener("click", () => lb.close && lb.close());
+lb.addEventListener("click", e => { if (e.target === lb && lb.close) lb.close(); });
+
+/* ---------- 编码／解码 ---------- */
+function b64url(bytes) {
+  let s = "";
+  const CH = 0x8000;
+  for (let i = 0; i < bytes.length; i += CH) s += String.fromCharCode.apply(null, bytes.subarray(i, i + CH));
+  return btoa(s).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+
+async function encodePayload(obj) {
+  const bytes = new TextEncoder().encode(JSON.stringify(obj));
+  const plain = "PKC1." + b64url(bytes);
+  if (typeof CompressionStream === "function") {
+    try {
+      const cs = new CompressionStream("deflate-raw");
+      const buf = await new Response(new Blob([bytes]).stream().pipeThrough(cs)).arrayBuffer();
+      const packed = "PKC2." + b64url(new Uint8Array(buf));
+      if (packed.length < plain.length * 0.92) return packed;
+    } catch (e) {}
+  }
+  return plain;
+}
+
+function nowText() {
+  const d = new Date();
+  const p = n => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + " " + p(d.getHours()) + ":" + p(d.getMinutes());
+}
+
+function scrollToEl(el, block) {
+  if (!el) return;
+  try {
+    if (typeof el.scrollIntoView === "function") el.scrollIntoView({ behavior: "smooth", block: block || "start" });
+  } catch (e) {}
+}
+
+/* ---------- 提交 ---------- */
+let lastPayload = null;
+
+$("#submitBtn").addEventListener("click", async () => {
+  const d = readForm();
+  if (!d.id) { toast("请先填编号"); $("#pid").focus(); return; }
+  if (!d.seen) { toast("请选择“是否参与过制作或看过本作品”"); return; }
+  if (!d.solo) { toast("请选择“是否独立完成”"); return; }
+
+  const empty = d.a.map((v, i) => (v.trim() ? 0 : i + 1)).filter(Boolean);
+  if (empty.length) {
+    const ok = confirm("第 " + empty.join("、") + " 题还是空的。空白会记为“未答”，确认提交吗？");
+    if (!ok) {
+      const t = $("#q" + empty[0]);
+      if (t) { t.focus(); scrollToEl(t, "center"); }
+      return;
+    }
+  }
+
+  const payload = { v: 1, id: d.id, seen: d.seen, solo: d.solo, t: nowText(), ts: Date.now(), a: d.a, fb: d.fb };
+  lastPayload = payload;
+
+  const btn = $("#submitBtn");
+  btn.disabled = true; btn.textContent = "生成中…";
+  let code = "";
+  try { code = await encodePayload(payload); } catch (e) { code = ""; }
+
+  if (!code) {
+    btn.disabled = false; btn.textContent = "提交";
+    toast("生成失败，请换 Chrome / Edge / Safari 打开本页再试");
+    return;
+  }
+
+  $("#codeOut").value = code;
+  $("#doneMeta").textContent = "编号 " + payload.id + " · " + payload.t;
+  $("#result").classList.add("show");
+  scrollToEl($("#result"));
+
+  if (CONFIG.endpoint) {
+    try {
+      await fetch(CONFIG.endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+    } catch (e) {}
+  }
+
+  btn.disabled = false; btn.textContent = "提交";
+});
+
+$("#copyBtn").addEventListener("click", async () => {
+  const ta = $("#codeOut");
+  const text = ta.value;
+  try {
+    if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(text);
+    else { ta.select(); ta.setSelectionRange(0, text.length); document.execCommand("copy"); }
+    toast("已复制，去微信粘贴发送");
+  } catch (e) {
+    ta.select(); toast("请长按选中上面的文字，手动复制");
+  }
+});
+
+$("#dlBtn").addEventListener("click", () => {
+  if (!lastPayload) return;
+  const p = lastPayload;
+  const lines = [
+    "【判断卡试用回复】",
+    "编号：" + p.id,
+    "是否参与过制作或看过本作品：" + p.seen,
+    "是否独立完成、未用AI或外部搜索：" + p.solo,
+    "提交时间：" + p.t,
+    ""
+  ];
+  p.a.forEach((v, i) => { lines.push((i + 1) + ". " + QUESTIONS[i]); lines.push("答：" + (v || "（未答）")); lines.push(""); });
+  lines.push("额外反馈（最难懂/找不到依据的地方）：");
+  lines.push(p.fb || "无");
+  lines.push("");
+  lines.push("---- 回传码（给发起人用，可忽略）----");
+  lines.push($("#codeOut").value);
+
+  const blob = new Blob(["\ufeff" + lines.join("\r\n")], { type: "text/plain;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "判断卡_" + p.id + "_" + p.t.replace(/[: ]/g, "") + ".txt";
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500);
+  toast("已下载，可在微信里当作文件发送");
+});
+
+$("#backBtn").addEventListener("click", () => {
+  $("#result").classList.remove("show");
+  scrollToEl($("#quiz"));
+});
+
+let toastTimer = null;
+function toast(msg) {
+  const t = $("#toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2400);
+}
+
+/* ---------- 初始化 ---------- */
+(function init() {
+  const id = new URLSearchParams(location.search).get("id");
+  if (id) $("#pid").value = id.trim();
+  restoreDraft();
+  refresh();
+  if (!id) {
+    // 没带编号时，给个默认建议值，避免同学回想“编号是多少”
+    const d = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+    if (!d || !d.id) $("#pid").placeholder = "如 T01（发起人给的那串）";
+  }
+})();
+</script>
+</body>
+</html>

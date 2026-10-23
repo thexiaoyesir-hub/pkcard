@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>判断卡回传汇总页 · 试用版 V1</title>
+<style>
+:root{
+  --ink:#1b2422;--ink-2:#4a5652;--ink-3:#7b847f;
+  --paper:#f7f3ea;--card:#fff;--line:#e3dccd;--line-2:#efe9dc;
+  --brand:#123c3a;--brand-2:#1d5b52;--teal:#1f6f62;--amber:#9a6a24;
+  --shadow:0 1px 2px rgba(27,36,34,.05),0 8px 24px rgba(27,36,34,.05);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);
+  font:15px/1.7 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",system-ui,sans-serif}
+header{background:linear-gradient(160deg,#123c3a,#1b564e);color:#f3efe4;padding:22px 0 20px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+header h1{margin:0 0 6px;font-size:21px;font-weight:700}
+header p{margin:0;font-size:13px;color:#bfd6cf}
+main{padding:18px 0 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow);margin:0 0 16px}
+h2{font-size:16px;margin:0 0 10px}
+textarea{width:100%;min-height:110px;padding:12px;font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;
+  border:1px solid #d8d0bf;border-radius:10px;resize:vertical;background:#fdfbf5}
+textarea:focus{outline:2px solid #9fc7bb;outline-offset:1px}
+.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.btn{border:0;border-radius:10px;padding:10px 16px;font:inherit;font-weight:600;cursor:pointer;background:var(--brand);color:#f6f2e7}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:#fff;color:var(--brand);border:1px solid #cfc7b6;font-weight:500}
+.btn.small{padding:6px 11px;font-size:13px;border-radius:8px}
+.btn.danger{background:#fff;color:#b4472c;border:1px solid #e9c3b9;font-weight:500}
+.hint{font-size:12.5px;color:var(--ink-3);line-height:1.7;margin:8px 0 0}
+.stats{display:flex;gap:18px;flex-wrap:wrap;margin:0 0 14px;font-size:13.5px;color:var(--ink-2)}
+.stats b{color:var(--brand);font-size:17px;margin-right:2px;font-variant-numeric:tabular-nums}
+.empty{padding:26px 10px;text-align:center;color:var(--ink-3);font-size:14px;border:1px dashed #d9d1c0;border-radius:12px}
+.sub{border:1px solid var(--line-2);border-radius:12px;margin:0 0 10px;background:#fff;overflow:hidden}
+.sub > summary{list-style:none;cursor:pointer;padding:12px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.sub > summary::-webkit-details-marker{display:none}
+.sub .sid{font-weight:700;font-size:15px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--brand)}
+.sub .st{font-size:12.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.pill{font-size:11.5px;padding:2px 8px;border-radius:999px;border:1px solid #e0d9c8;color:var(--ink-2);background:#fbf8f0}
+.pill.warn{color:#8f4a1f;background:#fbe8dd;border-color:#f2d3c1}
+.pill.ok{color:#12574c;background:#e3f1ec;border-color:#cbe6dd}
+.pill.q{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+.sub .mini-q{margin-left:auto;font-size:12px;color:var(--ink-3)}
+.body{padding:0 14px 14px;border-top:1px solid var(--line-2)}
+.qa{margin:12px 0}
+.qa .q{font-size:13px;color:var(--ink-2);margin:0 0 4px;line-height:1.65}
+.qa .q b{color:var(--brand);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;margin-right:4px}
+.qa .a{font-size:14px;line-height:1.8;white-space:pre-wrap;word-break:break-word;background:#fbf8f0;border-radius:8px;padding:8px 10px;margin:0}
+.qa .a.none{color:#a09a8c;font-style:italic}
+.rate{display:flex;gap:6px;align-items:center;margin:6px 0 0;font-size:12px;color:var(--ink-3);flex-wrap:wrap}
+.rate select{font:inherit;font-size:12.5px;padding:3px 6px;border:1px solid #d8d0bf;border-radius:7px;background:#fff;color:var(--ink)}
+.meta-line{font-size:12.5px;color:var(--ink-3);margin:10px 0 0}
+.code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px;color:#9a9484;word-break:break-all;margin:10px 0 0}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,10px);background:#123c3a;color:#f6f2e7;
+  padding:10px 18px;border-radius:999px;font-size:14px;opacity:0;pointer-events:none;transition:.2s;z-index:60}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (max-width:600px){ .sub .mini-q{display:none} }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>判断卡回传汇总页</h1>
+    <p>把同学发来的回传码粘进来，自动拆成每题答案，导出 Excel 可用的 CSV。数据只在本机浏览器里，不上传。</p>
+  </div>
+</header>
+
+<main>
+  <div class="wrap">
+
+    <div class="card">
+      <h2>1 粘贴回传码</h2>
+      <textarea id="paste" placeholder="把微信里收到的回传码整段粘进来，可以一次粘很多份，中间夹着聊天文字也没关系。&#10;例：PKC2.AAAA...  PKC1.BBBB..."></textarea>
+      <div class="row">
+        <button class="btn" id="parseBtn">解析并加入</button>
+        <button class="btn ghost" id="importBtn">从 .txt 文件导入</button>
+        <input type="file" id="file" accept=".txt,.json,text/plain" multiple hidden>
+      </div>
+      <p class="hint">同一份重复粘贴不会重复计数（按编号＋提交时间识别）。收到 2 份以上可以先解析再核对。</p>
+    </div>
+
+    <div class="card">
+      <h2>2 汇总</h2>
+      <div class="stats">
+        <span><b id="nAll">0</b>份已收</span>
+        <span><b id="nSolo">0</b>份独立首次</span>
+        <span><b id="nFull">0</b>份答满 6 题</span>
+      </div>
+      <div id="list"><div class="empty">还没有收到回传码。粘贴后点“解析并加入”。</div></div>
+      <div class="row" style="margin-top:14px">
+        <button class="btn ghost small" id="csvBtn">导出 CSV</button>
+        <button class="btn ghost small" id="txtBtn">导出合并文本</button>
+        <button class="btn danger small" id="clearBtn">清空本机数据</button>
+      </div>
+      <p class="hint">CSV 用 Excel / WPS 直接打开不会乱码。每题可以标“充分／部分／误解／未答”，标记会一起导出。</p>
+    </div>
+
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+const QUESTIONS = [
+  "计划10月28日出游，暖冬票能否作为当天可用的选择？请写判断和依据。",
+  "想玩滑沙和骑骆驼，只买279组合套票A是否就已覆盖入园门票？材料能确定哪些费用包含关系？",
+  "针对套票A与E50开放时间卡，08:30、12:00、16:30分别约束什么动作？能否确定线上开售及A最晚核销时间？",
+  "看到“券后359元”和“金币兑券减10”，能否直接算出实付349元？还缺什么信息？",
+  "如果把出游日改为2026年11月20日，仅因它落在暖冬票日期范围内，就能保证约到吗？下一步要查什么？",
+  "从前面任一结论中，找出对应原图编号，并抄一句支持它的原文；再写一项仍需确认的事及所缺信息。"
+];
+const RATES = ["", "充分", "部分", "误解", "未答"];
+const KEY = "pkcard.v1.teacher";
+
+const $ = s => document.querySelector(s);
+let state = { subs: [], rates: {}, notes: {} };
+
+function load() {
+  try {
+    const d = JSON.parse(localStorage.getItem(KEY) || "null");
+    if (d && Array.isArray(d.subs)) state = { subs: d.subs, rates: d.rates || {}, notes: d.notes || {} };
+  } catch (e) {}
+}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { toast("本机存储已满或不可用"); } }
+const kOf = s => s.id + "|" + s.ts;
+
+/* ---------- 解码 ---------- */
+function b64urlToBytes(s) {
+  s = s.replace(/-/g, "+").replace(/_/g, "/");
+  while (s.length % 4) s += "=";
+  const bin = atob(s);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+async function decodeCode(code) {
+  const i = code.indexOf(".");
+  const tag = code.slice(0, i), body = code.slice(i + 1);
+  const bytes = b64urlToBytes(body);
+  let text;
+  if (tag === "PKC2") {
+    if (typeof DecompressionStream !== "function") throw new Error("浏览器不支持解压，请用新版 Chrome / Edge 打开本页");
+    const ds = new DecompressionStream("deflate-raw");
+    const buf = await new Response(new Blob([bytes]).stream().pipeThrough(ds)).arrayBuffer();
+    text = new TextDecoder().decode(buf);
+  } else {
+    text = new TextDecoder().decode(bytes);
+  }
+  const o = JSON.parse(text);
+  if (!o || !o.id) throw new Error("内容不完整");
+  return o;
+}
+
+/* ---------- 加入 ---------- */
+async function addCodes(text) {
+  const clean = String(text).replace(/[\u200b-\u200f\u2060\ufeff]/g, "");
+  const found = clean.match(/PKC[12]\.[A-Za-z0-9_\-\s]+/g) || [];
+  const codes = found.map(c => c.replace(/\s+/g, ""));
+  if (!codes.length) { toast("没找到回传码（应以 PKC1. 或 PKC2. 开头）"); return; }
+  let added = 0, dup = 0, bad = 0;
+  for (const c of codes) {
+    try {
+      const o = await decodeCode(c);
+      if (state.subs.some(s => kOf(s) === kOf(o))) { dup++; continue; }
+      o.a = (o.a || []).slice(0, 6);
+      while (o.a.length < 6) o.a.push("");
+      o.code = c;
+      state.subs.push(o); added++;
+    } catch (e) { bad++; }
+  }
+  state.subs.sort((x, y) => (x.ts || 0) - (y.ts || 0));
+  save(); render();
+  toast("新增 " + added + " 份" + (dup ? "，重复 " + dup + " 份" : "") + (bad ? "，失败 " + bad + " 份" : ""));
+}
+
+/* ---------- 渲染 ---------- */
+function render() {
+  const n = state.subs.length;
+  $("#nAll").textContent = n;
+  $("#nSolo").textContent = state.subs.filter(s => s.seen === "否" && s.solo === "是").length;
+  $("#nFull").textContent = state.subs.filter(s => (s.a || []).every(v => v && v.trim())).length;
+
+  const list = $("#list");
+  if (!n) { list.innerHTML = '<div class="empty">还没有收到回传码。粘贴后点“解析并加入”。</div>'; return; }
+
+  list.innerHTML = state.subs.map((s, idx) => {
+    const k = kOf(s);
+    const answered = (s.a || []).filter(v => v && v.trim()).length;
+    const pills =
+      '<span class="pill">看过本作品：' + (s.seen || "未填") + '</span>' +
+      '<span class="pill ' + (s.solo === "是" ? "ok" : "warn") + '">独立完成：' + (s.solo || "未填") + '</span>' +
+      '<span class="pill q">' + answered + '/6 题</span>';
+    const qa = QUESTIONS.map((q, i) => {
+      const v = (s.a[i] || "").trim();
+      const rk = k + "|" + i;
+      const cur = (state.rates[rk] || "");
+      return '<div class="qa">' +
+        '<p class="q"><b>Q' + (i + 1) + '</b>' + q + '</p>' +
+        '<p class="a' + (v ? "" : " none") + '">' + (v ? esc(v) : "（未答）") + '</p>' +
+        '<div class="rate"><span>核对：</span><select data-rate="' + rk + '">' +
+        RATES.map(r => '<option value="' + r + '"' + (r === cur ? " selected" : "") + '>' + (r || "未评") + '</option>').join("") +
+        '</select></div>' +
+        '</div>';
+    }).join("");
+    const fb = (s.fb || "").trim();
+    return '<details class="sub">' +
+      '<summary><span class="sid">' + esc(s.id) + '</span><span class="st">' + esc(s.t || "") + '</span>' + pills +
+      '<span class="mini-q">点开看全文与核对</span></summary>' +
+      '<div class="body">' + qa +
+      '<div class="qa"><p class="q"><b>反馈</b>额外反馈（最难懂／找不到依据的地方）</p>' +
+      '<p class="a' + (fb ? "" : " none") + '">' + (fb ? esc(fb) : "（未填）") + '</p></div>' +
+      '<p class="meta-line">备注</p>' +
+      '<textarea data-note="' + k + '" rows="2" style="min-height:auto;font-family:inherit;font-size:13.5px">' + esc(state.notes[k] || "") + '</textarea>' +
+      '<p class="code">回传码：' + esc(s.code || "") + '</p>' +
+      '</div></details>';
+  }).join("");
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+/* ---------- 事件 ---------- */
+$("#parseBtn").addEventListener("click", () => addCodes($("#paste").value));
+$("#paste").addEventListener("paste", () => setTimeout(() => addCodes($("#paste").value), 60));
+$("#importBtn").addEventListener("click", () => $("#file").click());
+$("#file").addEventListener("change", async e => {
+  const files = Array.from(e.target.files || []);
+  for (const f of files) {
+    const t = await f.text();
+    await addCodes(t);
+  }
+  e.target.value = "";
+});
+
+document.addEventListener("change", e => {
+  const r = e.target.closest("[data-rate]");
+  if (r) { state.rates[r.dataset.rate] = r.value; save(); return; }
+});
+document.addEventListener("input", e => {
+  const n = e.target.closest("[data-note]");
+  if (n) { state.notes[n.dataset.note] = n.value; clearTimeout(n._t); n._t = setTimeout(save, 400); }
+});
+
+$("#clearBtn").addEventListener("click", () => {
+  if (!confirm("清空本机保存的所有回传数据？建议先导出 CSV。")) return;
+  state = { subs: [], rates: {}, notes: {} };
+  save(); render(); toast("已清空");
+});
+
+/* ---------- 导出 ---------- */
+function download(name, text, type) {
+  const blob = new Blob([text], { type: type || "text/plain;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = name;
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1200);
+}
+
+$("#csvBtn").addEventListener("click", () => {
+  if (!state.subs.length) { toast("还没有数据"); return; }
+  const head = ["编号", "提交时间", "看过本作品", "独立完成"];
+  QUESTIONS.forEach((_, i) => head.push("Q" + (i + 1) + " 核对"));
+  head.push("额外反馈");
+  QUESTIONS.forEach((q, i) => head.push("Q" + (i + 1) + " " + q));
+  const rows = [head];
+  state.subs.forEach(s => {
+    const k = kOf(s);
+    const row = [s.id, s.t || "", s.seen || "", s.solo || ""];
+    for (let i = 0; i < 6; i++) row.push(state.rates[k + "|" + i] || "");
+    row.push(s.fb || "");
+    for (let i = 0; i < 6; i++) row.push(s.a[i] || "");
+    rows.push(row);
+  });
+  const csv = rows.map(r => r.map(c => '"' + String(c == null ? "" : c).replace(/"/g, '""') + '"').join(",")).join("\r\n");
+  const d = new Date();
+  const p = n => String(n).padStart(2, "0");
+  download("判断卡汇总_" + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + "_" + p(d.getHours()) + p(d.getMinutes()) + ".csv",
+    "\ufeff" + csv, "text/csv;charset=utf-8");
+  toast("已导出 CSV");
+});
+
+$("#txtBtn").addEventListener("click", () => {
+  if (!state.subs.length) { toast("还没有数据"); return; }
+  const out = ["【判断卡试用汇总】", "份数：" + state.subs.length, ""];
+  state.subs.forEach(s => {
+    out.push("编号：" + s.id + "　提交：" + (s.t || "") + "　看过：" + (s.seen || "") + "　独立：" + (s.solo || ""));
+    (s.a || []).forEach((v, i) => out.push("Q" + (i + 1) + "：" + (v || "（未答）")));
+    out.push("反馈：" + (s.fb || "（未填）"));
+    out.push("");
+  });
+  download("判断卡汇总.txt", "\ufeff" + out.join("\r\n"));
+  toast("已导出文本");
+});
+
+let tt = null;
+function toast(msg) {
+  const t = $("#toast");
+  t.textContent = msg; t.classList.add("show");
+  clearTimeout(tt); tt = setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+load(); render();
+</script>
+</body>
+</html>
